@@ -1,0 +1,7 @@
+.env
+*.html
+*.htm
+*.log
+*.aux
+*.gz
+.DS_Store

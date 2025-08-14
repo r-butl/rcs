@@ -1,0 +1,212 @@
+Lucas Butler
+08lbutler31@gmail.com
++1 530-949-0158
+github: github.com/r-butl
+Linked in: /lucas-butler-bb52b119b
+Link tree: linktr.ee/lucasbutler
+
+Bachelors Degree
+- Computer Engineering, B.S. minor in Computer Science
+- August '21 - May '24
+- CSU, Chico
+- 3.85 GPA
+- Took classes such as:
+    - Dynamics
+    - Strength of Materials
+    - Drafting
+    - Materials Science
+    - Manufacturing
+    - Diff. Eqs
+    - Multivariate calc.
+    - Design and Automation (Mechatronic Focus)
+    - Logic Design and Computer Architecture and Implementation
+        - System Verilog 
+    - Embedded Systems Development
+    - Probability & Statistics
+    - Electronics and Circuit Design
+    - Signals Systems and Transforms
+    - Digital Systems Design
+    - Real Time Embedded Systems
+    - High Performance Computering
+        - System Verilog
+    - Applied Graph Theory
+        - github: https://github.com/r-butl/Graph-Theory-Projects-Assigments
+    - Algorithms and Datastructures I, II, & III
+    - Computer Networks
+        - github: https://github.com/r-butl/Networks-Assignments
+    
+- Senior Project was a GUI that enabled Engineers to create and interact with 1D signal processing Pipelines and visualize them at every stage
+    - github: https://github.com/r-butl/CarePackage
+    - Python, C
+    - PyQT5, pandas, numpy, matplotlib, scikit, Ctypes, 
+
+
+Masters Degree: 
+- Computer Science, M.S., CSU, Chico, 3.883 GPA
+- August '24 to Expected Graduation December ‘25
+- Elephant Listening Project, Student Research Group, CSU, Chico
+    - Published a Paper in SPIE as a co-author with my instructor comparing RNNs and CNNs as detectors for Elephants rumbles in the infrasound sound spectrum.
+    - Led entire research project from conception to completion in 3 months: data exploration, engineering, training/validation/testing scripts, and experiment execution
+    - Processed dataset of 22,000 examples using cross-validation, grid search, and early stopping to optimize hyperparameters and training loops
+    - Used Singularity Pro to scale up TensorFlow training, crossvalidation and testing pipelines. Did a lot of data Engineering to 
+        properly format the raw audio clippings into Spectrograms of optimal resolution. 
+    - paper: https://www.spiedigitallibrary.org/conference-proceedings-of-spie/13454/3051994/A-comparison-of-machine-learning-multiband-sensor-fusion-models-for/10.1117/12.3051994.short
+    - Project github: https://github.com/r-butl/ELP-CNNvsRNN
+    - Tools: Python, Tensorflow, Numpy, Pandas, Singularity Containization, Jupyter, SciPy, Matplotlib
+    - Built tools for visualization and relabeling of the dataset to create specific testing cases.
+        - github: https://github.com/r-butl/SigVu
+    - Technologies:
+        - RayTune, MLFlow, Tensorflow, Numpy, pandas, Matplotlib, Singularity
+
+- Course Work:
+    - Machine learning 
+        - Wrote a PPM reader/writer and K-means clustering algorithm in C++
+            - Github: https://github.com/r-butl/KMeans-on-PPM-Images
+        - Attempting to train an CNN on Spectrograms of ECG signals for heart abnormality classification, discovered this wasn't the best combination  
+            but the work I did helped me land a research assistant role that led to my first paper
+            - Github: https://github.com/r-butl/Heart-Abnormality-Classification
+    - Robotics and Machine Intelligence
+        - My team connected ChatGPT and AWS TTS and STT into a ROS2 application enabling voice commands and higher-level control of our
+            TurtleBot, I developed a module to enable Waypoint saving and loading, connecting to Nav2 so that the Robot could keep track 
+            of desirable positions and move to them on demand.
+            - Github: https://github.com/r-butl/ROS-LLM
+    - Data Science  
+    - Applied Machine learning
+        - Trained a Neural network to understand the relationship between image embeddings and their text embedding pairs, used this module
+            as a text-based image searching tools
+            - Github: https://github.com/r-butl/TextBasedImageSearch
+            - Python, PyTorch
+    - Applied Computer Vision
+        - Designed a Computer vision algorithm that tracks a red lazer on a lighted bookshelf background
+            - Uses OpenCV and C++, Profiled and Optimized using Gprof
+            - Github: https://github.com/r-butl/Laser-Tracker-v1
+        - Designed a 6 service ADAS system with 4 detection services, two of them involving training YOLO models. Leveraged C++, TensorRT, OpenMP,
+            PThreads, and clever system design to squeeze out 25+ FPS on a Jetson Orin Nano, Profiled and optimized using Valgrind
+            - Improved performance from 8 FPS baseline to 25+ FPS through OpenMP loop optimization, parallel service architecture, and GPU acceleration
+            - Github: https://github.com/r-butl/ADAS-System
+    - HabitTrack
+        - Collaborated on a team of 5 to develop a React App that helps user track their habits
+            - Github: https://github.com/r-butl/ADAS-System
+    - Planned Courses:
+        - Numerical Methods and Parallel Programming
+        - Algorithms and Datastructures
+        - Research Methods 
+            - Physics informed Machine learning 
+
+In School Leadership:
+- IEEE Eta Kappy Nu
+- Tau Beta Pi
+- Formula SAE Business/Finance Lead
+    - Led team to 1st prize in cost event by creating innovative ECU redesign combining downsized module with external gyroscope component
+    - Developed novel approach to sensor integration by remapping inputs and creating custom external gyroscope component for cost optimization
+    - Achieved $800 savings per unit, translating to $800,000 savings per 1,000 units in production cost analysis
+    - Created cost models to predict project costs and keep teams on track
+    - Helped identify $5,000 in cost savings opportunities across subsystems over 2 seasons (total project cost $30,000)
+- Chico Men’s Club Basketball Team captain and treasurer
+    - Lead the team to an appearance in the conference tournament in our first year as a Club
+    - Handled the finances and cost analysis for our trips
+
+Awards:
+- Cum Laude (2024),
+- Computer Engineering Faculty Award (2024),
+- 1st Prize Formula SAE Cost Presentation (2023)
+
+Personal Projects:
+Ohhlio
+- https://ohhlio.netlify.app/
+- A tool to enable physical engineering students to create better engineering portfolios for their job hunt
+- Worked as the sole developer with an experience UI designer and a product manager to design the application
+- Developed V1 prototype over a summer while working full time at Sandia, currently deploying to production
+- Planned features include: 'Magic' button for auto layout optimization, phone upload for instant shop photo integration, and STL/CAD model previews
+- Current features: batch photo upload, text descriptions, and project flow organization
+    - Full-Stack Development: React 19, TypeScript, Express.js, PostgreSQL
+    - State Management: Zustand, React Context
+    - UI/UX: Tailwind CSS, Radix UI, Shadcn, React Grid Layout, TipTap
+    - Testing: Jest, Vitest, React Testing Library
+    - Infrastructure: AWS S3, Vercel, Netlify, Serverless Functions
+    - Database: Prisma ORM, PostgreSQL
+    - Authentication: JWT, bcrypt
+    - File Management: Multer, AWS S3 integration
+
+Work Experience
+- Park Avenue Pub (Sep '21 - Dec '21) Chico, CA
+    - Worked from bus boy to server/bartender, practiced great customer service and kept track of up to 7 tables while keeping my work environment
+        organized
+- CE/EE Tutor/Grader (Jan '22 - May '23) CSU, Chico, Ca
+    - Tutored 15+ students weekly on electrical circuit design and embedded systems
+    - Improved average student performance by 7% through personalized feedback
+- SMC, ltd Manufacturing Engineer Intern (May '22 - August '22) Santa Rosa, CA
+    - Created innovative solution using automatic blender for PLA pellet mixing, replacing manual process and saving $12,000
+    - Redesigned robotic cage system for injection mold machines to standardize latch points and mounting heights, reducing operational downtime by 30 minutes per changeover
+    - Designed and manufactured custom support bars using drill press, band saw, and welder to prevent mounting bar sag and eliminate manual adjustments
+    - Reduced cage production costs by 25% through standardized design and optimized materials
+    - Conducted Statistical Process Control (SPC) to identify and resolve out-of-spec production areas
+    - Learned medical injection mold manufacturing industry operations and technical processes 
+- Sandia National Laboratories (Sept '23 - Present) Albuquerque, NM and Remote
+    - Main focus was to learn about LLMs and how to apply them to various problems, providing insights for the engineers to use
+    - Developed a tool that reduces fatigue and increases turnover speed in HR and business professionals who screen candidates for hiring
+        - Developed a Data Extraction pipeline that extracts information from 100 resumes a minute and stores it in a Postgres database, 
+            where as professionals were spending 3-5 minutes extracting information per resume.
+        - Prototype secured $5,000 in external funding and one me a SPOT award for taking initiative.
+            - LLM: Llama3.1 70b, Deployed locally on a VLLM server with 6 GPUs.
+            - Python: Pandas, OpenAI API, Pydantic, Postgres
+        - Worked independently
+    - Applied LLMs to requirements analysis in classified environment, creating custom agentic scripts for automated issue detection
+        - Developed novel approach combining Fagan inspection, Parent-Child analysis, and contradiction/duplication detection for comprehensive requirements validation
+        - Currently deployed to 2 engineering teams (60+ engineers) with more teams planned for rollout
+        - Created custom agentic scripts for automated parent-child analysis, contradiction detection, and general issue identification
+        - This specific problem that we are solving has potential to save the organization upwards of $300,000,000 in reengineering costs over the 
+            2 year product lifecycle
+        - Main challenge was making this system completely isolated from external resources so it could be deployed on a classified network.
+        - Technologies used:
+            - Backend:
+                - Python, Langchain, Flask API, ChromaDB
+            - Frontend:
+                - Javascript and JQuery, then later migration to React
+            Deployment:
+                - Docker, then later the backend was migrated to Javascript and we built using Electron
+                - Language model deployment using Ollama server and docker on Openshift
+            AI/ML
+                - Llama3.2-8b on Ollama
+                - allmini-v12 sentence embedding
+
+
+Languages
+Python, C, C++, SQL, TypeScript, JavaScript
+
+Technologies
+Cloud & Infrastructure:
+AWS, Google Cloud, Vercel, Netlify, Docker, Singularity Container, OpenShift
+
+Databases & Storage:
+PostgreSQL, MongoDB, ChromaDB, AWS S3
+
+Data Science & ML:
+Pandas, NumPy, Matplotlib, Scikit-Learn, TensorFlow, PyTorch, Ray-Tune, MLFlow, Jupyter, SciPy
+
+AI/ML & LLMs:
+OpenAI API, Langchain, Ollama, VLLM, Llama3.1, Llama3.2-8b, allmini-v12, Pydantic
+
+Computer Vision & Robotics:
+OpenCV, TensorRT, YOLO, ROS2, Jetson Orin Nano
+
+Frontend & UI:
+React, React 19, TypeScript, JavaScript, jQuery, PyQt5, Tailwind CSS, Radix UI, Shadcn, React Grid Layout, TipTap
+
+Backend & APIs:
+Express.js, Flask API, Electron
+
+Development Tools:
+Git, Linux shell, OSX, Windows, Ctypes, OpenMP, PThreads, GProf, Valgrind
+
+Testing & Quality:
+Jest, Vitest, React Testing Library
+
+Authentication & Security:
+JWT, bcrypt
+
+File Management:
+Multer
+
+Embedded & Hardware:
+System Verilog
