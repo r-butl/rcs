@@ -1,4 +1,4 @@
-### RAAP (Resume Automation Agent Prototype)
+### RCS (Resume Creation System)
 Finding the right job, determining if you're the right fit, tailoring a resume... such a drag! With this prototype, all you have to do it save some jobs on LinkedIn, write everything you know about yourself into a text file, and let the agent cook!
 
 #### Step 0: Installations
