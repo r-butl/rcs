@@ -46,6 +46,7 @@ Masters Degree:
 - August '24 to Expected Graduation December ‘25
 - Elephant Listening Project, Student Research Group, CSU, Chico
     - Published a Paper in SPIE as a co-author with my instructor comparing RNNs and CNNs as detectors for Elephants rumbles in the infrasound sound spectrum.
+    - Was able to achieve 95% detection accuracy of Elephants using the CNN
     - Led entire research project from conception to completion in 3 months: data exploration, engineering, training/validation/testing scripts, and experiment execution
     - Processed dataset of 22,000 examples using cross-validation, grid search, and early stopping to optimize hyperparameters and training loops
     - Used Singularity Pro to scale up TensorFlow training, crossvalidation and testing pipelines. Did a lot of data Engineering to 
@@ -56,7 +57,7 @@ Masters Degree:
     - Built tools for visualization and relabeling of the dataset to create specific testing cases.
         - github: https://github.com/r-butl/SigVu
     - Technologies:
-        - RayTune, MLFlow, Tensorflow, Numpy, pandas, Matplotlib, Singularity
+        - RayTune, MLFlow, Tensorflow, Numpy, pandas, Matplotlib, Singularity, SLURM
 
 - Course Work:
     - Machine learning 
@@ -83,6 +84,7 @@ Masters Degree:
         - Designed a 6 service ADAS system with 4 detection services, two of them involving training YOLO models. Leveraged C++, TensorRT, OpenMP,
             PThreads, and clever system design to squeeze out 25+ FPS on a Jetson Orin Nano, Profiled and optimized using Valgrind
             - Improved performance from 8 FPS baseline to 25+ FPS through OpenMP loop optimization, parallel service architecture, and GPU acceleration
+            - Successfully trained a YOLO model to detect traffic lights, utilizing 2 curated datasets, cross validation, and multiple training strategies.
             - Github: https://github.com/r-butl/ADAS-System
     - HabitTrack
         - Collaborated on a team of 5 to develop a React App that helps user track their habits
@@ -116,14 +118,14 @@ Ohhlio
 - https://ohhlio.netlify.app/
 - A tool to enable physical engineering students to create better engineering portfolios for their job hunt
 - Worked as the sole developer with an experience UI designer and a product manager to design the application
-- Developed V1 prototype over a summer while working full time at Sandia, currently deploying to production
+- Developed V1 prototype over a summer while working full time at Sandia, currently deployed to production
 - Planned features include: 'Magic' button for auto layout optimization, phone upload for instant shop photo integration, and STL/CAD model previews
 - Current features: batch photo upload, text descriptions, and project flow organization
     - Full-Stack Development: React 19, TypeScript, Express.js, PostgreSQL
     - State Management: Zustand, React Context
     - UI/UX: Tailwind CSS, Radix UI, Shadcn, React Grid Layout, TipTap
     - Testing: Jest, Vitest, React Testing Library
-    - Infrastructure: AWS S3, Vercel, Netlify, Serverless Functions
+    - Infrastructure: AWS S3, Vercel, Netlify, Serverless Functions, Express
     - Database: Prisma ORM, PostgreSQL
     - Authentication: JWT, bcrypt
     - File Management: Multer, AWS S3 integration
@@ -156,7 +158,7 @@ Work Experience
         - Currently deployed to 2 engineering teams (60+ engineers) with more teams planned for rollout
         - Created custom agentic scripts for automated parent-child analysis, contradiction detection, and general issue identification
         - This specific problem that we are solving has potential to save the organization upwards of $300,000,000 in reengineering costs over the 
-            2 year product lifecycle
+            multi year product lifecycle
         - Main challenge was making this system completely isolated from external resources so it could be deployed on a classified network.
         - Technologies used:
             - Backend:

@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Simple LinkedIn Job Scraper
-"""
 
 import time
 import os
@@ -11,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import json
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
@@ -24,8 +22,8 @@ def setup_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
-    # Use the ChromeDriver we installed
-    service = Service("/usr/local/bin/chromedriver")
+    # Automatically download and use the correct ChromeDriver version
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
@@ -65,12 +63,7 @@ def login_to_linkedin(driver, email, password):
 def get_saved_jobs(driver):
     """Get saved job links"""
     driver.get("https://www.linkedin.com/my-items/saved-jobs/")
-    time.sleep(5)
-    
-    # Scroll to load all jobs
-    for _ in range(5):
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
+    time.sleep(2)
     
     # Find job links - try multiple selectors
     selectors = [
@@ -99,64 +92,52 @@ def extract_job_data(driver, job_url):
     time.sleep(3)
     
     try:
-        # Get job title
-        title = ""
-        title_selectors = [
-            ".job-details-jobs-unified-top-card__job-title",
-            "h1",
-            "[data-test-id='job-details-job-title']"
-        ]
-        for selector in title_selectors:
-            try:
-                title = driver.find_element(By.CSS_SELECTOR, selector).text
-                if title:
-                    break
-            except:
-                continue
-        
-        # Get company name
-        company = ""
-        company_selectors = [
-            ".job-details-jobs-unified-top-card__company-name",
-            "[data-test-id='job-details-company-name']"
-        ]
-        for selector in company_selectors:
-            try:
-                company = driver.find_element(By.CSS_SELECTOR, selector).text
-                if company:
-                    break
-            except:
-                continue
-        
-        # Get description from the entire container
+
+        # Get description by finding "About the job" text and getting its parent container
         description_html = ""
         description_text = ""
-        container_selectors = [
-            ".jobs-description__container",
-            ".jobs-box--fadein.jobs-box--full-width.jobs-box--with-cta-large.jobs-description",
-            ".job-details-module",
-            ".jobs-box__html-content"
-        ]
-        for selector in container_selectors:
-            try:
-                element = driver.find_element(By.CSS_SELECTOR, selector)
-                description_html = element.get_attribute("outerHTML")
-                soup = BeautifulSoup(description_html, "html.parser")
-                description_text = soup.get_text(separator="\n", strip=True)
-                if description_text:
-                    break
-            except:
-                continue
         
-        # Summarize the description
-        summarized_description = summarize_text(description_text, sentences=10)
+        # Strategy 1: Find "About the job" text and get its parent container
+        try:
+            # Use XPath to find element containing "About the job" text (case-insensitive)
+            about_job_element = driver.find_element(By.XPATH, "//*[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'about the job')]")
+            
+            # Try to find a meaningful parent container (try up to 3 levels up)
+            parent_element = None
+            current_element = about_job_element
+            
+            # Try immediate parent first
+            for level in range(3):
+                try:
+                    parent = current_element.find_element(By.XPATH, "..")
+                    # Check if this parent has substantial content (more than just the heading)
+                    parent_text = parent.text.strip()
+                    if len(parent_text) > 500:  # If parent has substantial content, use it
+                        parent_element = parent
+                        break
+                    current_element = parent
+                except:
+                    break
+            
+            # If we didn't find a good parent, use the immediate parent
+            if parent_element is None:
+                parent_element = about_job_element.find_element(By.XPATH, "..")
+            
+            # Get all text from the parent element
+            description_html = parent_element.get_attribute("outerHTML")
+            soup = BeautifulSoup(description_html, "html.parser")
+            description_text = soup.get_text(separator="\n", strip=True)
+
+            
+        except Exception as e:
+            print(f"Could not find 'About the job' element: {e}")
+            pass
         
         return {
-            "title": title,
-            "company": company,
-            "description_text": summarized_description,
-            "url": job_url
+            "description_text": description_text,
+            "url": job_url,
         }
+
     except Exception as e:
         print(f"Error extracting job data: {e}")
         return None
@@ -191,10 +172,15 @@ def main():
         # Extract data from each job
         jobs_data = []
         for i, job_url in enumerate(job_links, 1):
-            print(f"Processing job {i}/{len(job_links)}")
+            print(f"\n{'#'*80}")
+            print(f"Processing job {i}/{len(job_links)}: {job_url}")
+            print(f"{'#'*80}")
             job_data = extract_job_data(driver, job_url)
             if job_data:
+                print(f"✓ Successfully extracted: {job_data.get('title', 'N/A')} at {job_data.get('company', 'N/A')}")
                 jobs_data.append(job_data)
+            else:
+                print(f"✗ Failed to extract job data")
             time.sleep(2)
         
         # Save to file
