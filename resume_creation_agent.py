@@ -5,13 +5,18 @@ import os
 from typing import Dict, List, Callable, Any, Optional
 from dotenv import load_dotenv
 from datetime import datetime
+from file_tools import (
+    get_file_line_count, list_dir, search_in_file, read_file_lines, write_file_lines
+)
 
 try:
-    from openai import OpenAI
+    from langfuse.openai import openai
+    from langfuse import observe
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
     print("Warning: OpenAI not installed. Install with: pip install openai")
+
 
 
 class AgenticLoop:
@@ -47,7 +52,7 @@ class AgenticLoop:
         if not self.api_key:
             raise ValueError("OpenAI API key not provided and not found in .env file")
         
-        self.client = OpenAI(api_key=self.api_key)
+        self.client = openai.OpenAI(api_key=self.api_key)
         self.system_prompt = system_prompt
         self.tools = tools
         self.model = model
@@ -133,6 +138,7 @@ class AgenticLoop:
         except:
             return str(result)
     
+    @observe(capture_input=True, capture_output=True)
     def run(self, task: str) -> Dict[str, Any]:
         """
         Run the agentic loop to complete a task
@@ -146,15 +152,11 @@ class AgenticLoop:
         self.conversation_history = [
             {"role": "system", "content": self.system_prompt}
         ]
-        print(f"[SYSTEM] Added system prompt: {self.system_prompt[:100]}{'...' if len(self.system_prompt) > 100 else ''}")
-        
 
         self.conversation_history.append({
             "role": "user",
             "content": task
         })
-
-        print(f"[USER] Added task: {task[:200]}{'...' if len(task) > 200 else ''}")
         
         self.iteration_count = 0
         
@@ -194,19 +196,6 @@ class AgenticLoop:
             }
             self.conversation_history.append(assistant_message)
             
-            # Print assistant message
-            if message.content:
-                print(f"\n[ASSISTANT] Iteration {self.iteration_count}: {message.content[:300]}{'...' if len(message.content) > 300 else ''}")
-            if message.tool_calls:
-                print(f"[ASSISTANT] Calling {len(message.tool_calls)} tool(s):")
-                for tool_call in message.tool_calls:
-                    tool_name = tool_call.function.name
-                    try:
-                        args = json.loads(tool_call.function.arguments)
-                        print(f"  - {tool_name}({json.dumps(args, indent=2)[:200]}{'...' if len(json.dumps(args)) > 200 else ''})")
-                    except:
-                        print(f"  - {tool_name}(...)")
-            
             # Check if agent wants to use tools
             if message.tool_calls:
                 # Execute all tool calls
@@ -218,7 +207,6 @@ class AgenticLoop:
                         arguments = {}
                     
                     # Call the tool
-                    print(f"[TOOL] Executing {tool_name}...")
                     tool_result = self._call_tool(tool_name, arguments)
                     formatted_result = self._format_tool_result(tool_name, tool_result)
                     
@@ -230,7 +218,6 @@ class AgenticLoop:
                         "content": formatted_result
                     }
                     self.conversation_history.append(tool_message)
-                    print(f"[TOOL] Result from {tool_name}: {formatted_result[:300]}{'...' if len(formatted_result) > 300 else ''}")
                 
                 continue
             
@@ -239,7 +226,8 @@ class AgenticLoop:
                 # Check for completion signals 
                 content_lower = message.content.lower()
                 if any(signal in content_lower for signal in ["task complete"]) or self.iteration_count >= 2 and not message.tool_calls:
-                    print(f"\n[COMPLETE] Task completed in {self.iteration_count} iterations")
+                    print(f"[STATUS] Task completed in {self.iteration_count} iteration(s)")
+                    
                     return {
                         "result": message.content,
                         "iterations": self.iteration_count,
@@ -250,7 +238,8 @@ class AgenticLoop:
         
         # Max iterations reached
         final_message = self.conversation_history[-1].get("content", "Max iterations reached")
-        print(f"\n[WARNING] Max iterations ({self.max_iterations}) reached")
+        print(f"[WARNING] Max iterations ({self.max_iterations}) reached")
+        
         return {
             "result": final_message,
             "iterations": self.iteration_count,
@@ -280,7 +269,6 @@ class AgenticLoop:
         try:
             with open(self.session_log_path, 'w', encoding='utf-8') as f:
                 json.dump(initial_log, f, indent=2, ensure_ascii=False, default=str)
-            print(f"[LOG] Session log initialized: {self.session_log_path}")
         except Exception as e:
             print(f"[ERROR] Failed to initialize session log: {e}")
     
@@ -313,103 +301,20 @@ class AgenticLoop:
             with open(self.session_log_path, 'w', encoding='utf-8') as f:
                 json.dump(log_data, f, indent=2, ensure_ascii=False, default=str)
             
-            print(f"[LOG] Appended to session log: {self.session_log_path}")
             return self.session_log_path
         except Exception as e:
             print(f"[ERROR] Failed to save log: {e}")
             return ""
 
-########## TOOOLS
-def read_file(filepath: str) -> str:
-    """Read a file and return its contents"""
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return {"content": f.read(), "filepath": filepath}
-    except Exception as e:
-        return {"error": str(e)}
-
-def write_file(filepath: str, content: str) -> Dict:
-    """
-    Write content to a file
-    
-    Args:
-        filepath: Path to the file
-        content: Text to write to the file
-        
-    returns:
-        Dictionary with status of operation information
-    """
-    try:
-        # Protect against writing to files that already exist
-        if not os.path.exists(filepath):
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(content)
-            return {"status": "success", "filepath": filepath}
-        else:
-            return {"error": "You are not allowed to write to files that already exist."}
-    except Exception as e:
-        return {"error": str(e)}
-
-def search_in_file(filepath: str, query: str) -> Dict:
-    """
-    Search for a query string within a file's contents
-    
-    Args:
-        filepath: Path to the file to search
-        query: The search query (case-insensitive)
-    
-    Returns:
-        Dictionary with matching lines and their line numbers
-    """
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        
-        matches = []
-        for i, line in enumerate(lines, 1):
-            if query.lower() in line.lower():
-                matches.append({
-                    "line_number": i,
-                    "content": line.strip()
-                })
-        
-        return {
-            "filepath": filepath,
-            "query": query,
-            "matches": matches,
-            "count": len(matches)
-        }
-    except Exception as e:
-        return {"error": str(e)}
-
-def view_directory_items(path: str) -> Dict:
-    """List directory contents with file type information"""
-    try:
-        items = []
-        for item in os.listdir(path):
-            item_path = os.path.join(path, item)
-            item_info = {
-                "name": item,
-                "type": "directory" if os.path.isdir(item_path) else "file",
-                "extension": os.path.splitext(item)[1] if os.path.isfile(item_path) else None
-            }
-            items.append(item_info)
-        
-        return {
-            "path": path,
-            "items": items,
-            "count": len(items)
-        }
-    except Exception as e:
-        return {"error": str(e)}
 
 if __name__ == "__main__":
     # Create tools dictionary
     tools = {
-        "read_file": read_file,
-        "write_file": write_file,
-        "search_in_file": search_in_file,
-        "view_directory_item": view_directory_items,
+        "get_file_line_count": get_file_line_count, 
+        "list_dir": list_dir, 
+        "search_in_file": search_in_file, 
+        "read_file_lines": read_file_lines, 
+        "write_file_lines": write_file_lines
     }
 
     # Define system prompt
@@ -433,6 +338,7 @@ if __name__ == "__main__":
     - When working with files, read and process one file at a time.
     - When helping with resumes, follow best practices for clarity, conciseness, and impact in professional writing.
     - When writing files, place them in the "agent_output" folder.
+    - When conducting analysis tasks, create a notes file and update it with the state of the task a purtinent information, for example, if you are conducting a study on the user's experience, I want you summarize your notes into the notes file.
     """
 
     agent = AgenticLoop(
@@ -451,8 +357,6 @@ if __name__ == "__main__":
             exit()
 
         result = agent.run(user_prompt)
-
-        print(f"Result: {result['result']}")
         
         agent.save_log()
 
