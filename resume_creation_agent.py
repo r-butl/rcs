@@ -9,6 +9,10 @@ from file_tools import (
     get_file_line_count, list_dir, search_in_file, read_file_lines, write_file_lines
 )
 
+from resume_builder import (
+    ResumeBuilder
+)
+
 try:
     from langfuse.openai import openai
     from langfuse import observe
@@ -72,7 +76,7 @@ class AgenticLoop:
             # Get function signature and docstring
             import inspect
             sig = inspect.signature(tool_func)
-            doc = tool_func.__doc__ or ""
+            doc = inspect.getdoc(tool_func) or ""
             
             # Build parameter schema
             properties = {}
@@ -105,7 +109,7 @@ class AgenticLoop:
                 "type": "function",
                 "function": {
                     "name": tool_name,
-                    "description": doc.split('\n')[0] if doc else f"Tool: {tool_name}",
+                    "description": doc if doc else f"Tool: {tool_name}",
                     "parameters": {
                         "type": "object",
                         "properties": properties,
@@ -308,37 +312,66 @@ class AgenticLoop:
 
 
 if __name__ == "__main__":
-    # Create tools dictionary
+
+    latex_resume = ResumeBuilder("test.tex")
+
+    # we can pass class methods to the LLM if they have been bound to an object
     tools = {
-        "get_file_line_count": get_file_line_count, 
-        "list_dir": list_dir, 
-        "search_in_file": search_in_file, 
-        "read_file_lines": read_file_lines, 
-        "write_file_lines": write_file_lines
+        "set_name": latex_resume.set_name,
+        "set_address": latex_resume.set_address,
+        "set_phone_number": latex_resume.set_phone_number,
+        "set_email": latex_resume.set_email, 
+        "add_contact": latex_resume.add_contact,
+        "set_summary": latex_resume.set_summary,
+        "add_skills": latex_resume.add_skills, 
+        "add_work_experience": latex_resume.add_work_experience
     }
 
-    # Define system prompt
-    system_prompt = """You are a helpful AI assistant that can use tools to complete tasks. You are currently placed within a working directory containing multiple files, such as:
+    # # Create tools dictionary
+    # tools = {
+    #     "get_file_line_count": get_file_line_count, 
+    #     "list_dir": list_dir, 
+    #     "search_in_file": search_in_file, 
+    #     "read_file_lines": read_file_lines, 
+    #     "write_file_lines": write_file_lines
+    # }
 
-    - Job description data scraped from LinkedIn
-    - Text files with a candidate’s experience and background information
-    - LaTeX files containing resume formatting templates
+    # # Define system prompt
+    # system_prompt = """You are a helpful AI assistant that can use tools to complete tasks. You are currently placed within a working directory containing multiple files, such as:
 
-    Your overall goal is to assist the user in their journey to find a job that matches their skills and to help them write or improve their resume.
+    # - Job description data scraped from LinkedIn
+    # - Text files with a candidate’s experience and background information
+    # - LaTeX files containing resume formatting templates
 
-    Guidelines:
+    # Your overall goal is to assist the user in their journey to find a job that matches their skills and to help them write or improve their resume.
 
-    - Use the available tools at your discretion to achieve the task.
-    - Always explain what you are doing and provide clear, actionable results.
-    - Plan your approach before executing.
-    - When reading file data, summarize the key information relevant to the current task before proceeding.
-    - Focus on making small, high-quality improvements rather than broad or unfocused changes.
-    - Use the key phrase “task complete” only when the task is fully accomplished or when you need user input to continue.
-    - If a question can be answered simply, do so concisely.
-    - When working with files, read and process one file at a time.
-    - When helping with resumes, follow best practices for clarity, conciseness, and impact in professional writing.
-    - When writing files, place them in the "agent_output" folder.
-    - When conducting analysis tasks, create a notes file and update it with the state of the task a purtinent information, for example, if you are conducting a study on the user's experience, I want you summarize your notes into the notes file.
+    # Guidelines:
+
+    # - Use the available tools at your discretion to achieve the task.
+    # - Always explain what you are doing and provide clear, actionable results.
+    # - Plan your approach before executing.
+    # - When reading file data, summarize the key information relevant to the current task before proceeding.
+    # - Focus on making small, high-quality improvements rather than broad or unfocused changes.
+    # - Use the key phrase “task complete” only when the task is fully accomplished or when you need user input to continue.
+    # - If a question can be answered simply, do so concisely.
+    # - When working with files, read and process one file at a time.
+    # - When helping with resumes, follow best practices for clarity, conciseness, and impact in professional writing.
+    # - When writing files, place them in the "agent_output" folder.
+    # - When conducting analysis tasks, create a notes file and update it with the state of the task a purtinent information, for example, if you are conducting a study on the user's experience, I want you summarize your notes into the notes file.
+    # """
+
+    with open("experience.txt", "r") as file:
+        experience_data = file.read()
+
+    system_prompt = """
+        You are a resume construction agent. Your task is to use the experience data and tools provided to construct a resume to the best of your ability. You follow guidelines strictly.
+
+        Guidelines:
+        - Use the key phrase “task complete” only when the task is fully accomplished or when you need user input to continue.
+        - Make up to 2 function calls at a time.
+        - For parameter entries, maintain the clear level of detail present in the data, do not summarize experience.
+
+
     """
 
     agent = AgenticLoop(
@@ -361,6 +394,14 @@ if __name__ == "__main__":
         agent.save_log()
 
     else:   # Demo mode
-        user_prompt = "I would like you to search for the 1 job that best aligns with my experience, and create me a resume for it."
+        user_prompt = f"""Use this experience data to construct a resume.
+        
+        Experience:
+        
+        ```
+        {experience_data}
+        ```"""
 
         result = agent.run(user_prompt)
+
+        latex_resume.save()
