@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -37,53 +38,109 @@ class ResumeBuilder:
     # ------------------------------------------------------------------ #
     # Personal details
     # ------------------------------------------------------------------ #
-    def set_name(self, name: str) -> None:
+    def set_name(self, name: str) -> Optional[str]:
         """Store the applicant's display name that will be rendered in the header."""
+        error = self._validate_string_param(name, 'name')
+        if error:
+            return error
         self.name = name.strip()
+        return None
 
-    def set_address(self, address: str) -> None:
-        """Store the mailing, city, or general location line for the header."""
+    def set_address(self, address: str) -> Optional[str]:
+        """Store the mailing, city, or general location line for the header.
+        
+        Guardrails:
+        - Use the format: <City>, <State/Province>, <Country>"""
+        error = self._validate_string_param(address, 'address')
+        if error:
+            return error
         self.address = address.strip()
+        return None
 
-    def set_phone_number(self, number: str) -> None:
-        """Store a primary phone number to combine with the address and email."""
+    def set_phone_number(self, number: str) -> Optional[str]:
+        """Store a primary phone number to combine with the address and email.
+        
+        Guardrails:
+        - use the format (###) ###-####"""
+        error = self._validate_string_param(number, 'number')
+        if error:
+            return error
         self.phone_number = number.strip()
+        return None
 
-    def set_email(self, email: str) -> None:
+    def set_email(self, email: str) -> Optional[str]:
         """Store the email address that appears with other contact details."""
+        error = self._validate_string_param(email, 'email')
+        if error:
+            return error
         self.email = email.strip()
+        return None
 
-    def add_contact(self, contact_type: str, display_name: str, link: str) -> None:
-        """Track an external contact method (e.g., GitHub, LinkedIn) with its URL."""
+    def add_contact(self, contact_type: str, display_name: str, link: str) -> Optional[str]:
+        """Track an external contact method (e.g., GitHub, LinkedIn) with its URL.
+        
+        Guardrails:
+        - For contact_type, place the platform name, for example: Github
+        - For display_name, use the username of the URL, for example, if the link was github.com/r-butl, use r-butl
+        - For link, place the full URL in the string
+        """
+        params = {
+            'contact_type': contact_type,
+            'display_name': display_name,
+            'link': link,
+        }
+        
+        for param_name, param_value in params.items():
+            error = self._validate_string_param(param_value, param_name)
+            if error:
+                return error
+        
         self.contacts.append((contact_type.strip(), display_name.strip(), link.strip()))
+        return None
 
     # ------------------------------------------------------------------ #
     # Resume sections
     # ------------------------------------------------------------------ #
-    def set_summary(self, summary: str) -> None:
-        """Populate the optional professional summary section.
-        
-        Agent Instructions:
-        - When writing the summary, focus on the individuals 'value proposition' and what they bring to the table.
-        
+    def set_summary(self, summary: str) -> Optional[str]:
+        """Populates the optional professional summary section.
+
+        Guardrails:
+        - Keep the summary concise and focus on alignment with the candidate's experience.
         """
+        error = self._validate_string_param(summary, 'summary')
+        if error:
+            return error
         self.summary = summary.strip()
         self._ensure_section_order(SECTION_SUMMARY)
+        return None
 
-    def add_skills(self, section: str, skills: List[str]) -> None:
+    def add_skills(self, section: str, skills: str) -> Optional[str]:
         """Add or append a labeled skills subsection with one or more skills.
         
-        Agent Instructions:
-        - the skills parameter expects a string of comma seperated values.
-        
+        Guardrails:
+        - Make sure the section is upper case
+        - For the skills parameter expects a string of comma seperated values, with no qoutes around values
         """
+        params = {
+            'section': section,
+            'skills': skills,
+        }
+        
+        for param_name, param_value in params.items():
+            error = self._validate_string_param(param_value, param_name)
+            if error:
+                return error
+        
         cleaned_section = section.strip()
         if cleaned_section not in self.skills:
             self.skills[cleaned_section] = []
         cleaned_skills = [skill.strip() for skill in skills.split(',') if skill.strip()]
+        if not cleaned_skills:
+            return "Error: 'skills' must be a comma-separated list with at least one valid skill"
         self.skills[cleaned_section].extend(cleaned_skills)
         if self.skills[cleaned_section]:
             self._ensure_section_order(SECTION_SKILLS)
+        return None
 
     def add_work_experience(
         self,
@@ -93,14 +150,33 @@ class ResumeBuilder:
         end_date: str,
         location: str,
         experience_points: str,
-    ) -> None:
+    ) -> Optional[str]:
         """Append a job entry with bullet-point accomplishments.
         
-        Agent Instructions:
-        - with the experience parament, seperate the statements using the symbol sequence '<<'
-        - When writing experience, use the STAR method, aka, Situation, Task, Action, Result. Focus on impact
-        - Do not use leading dash or bullet point characters, bullet points will be applied automatically
+        Guardrails:
+        - For job title, write what position the candidate was, for example: Software Engineer
+        - For dates, use the format <month> <last two digits of year> as such: May '25
+        - For experience_points do the following:
+            - seperate the statements using the symbol sequence '<<'
+            - write using the STAR method, aka, Situation, Task, Action, Result. Focus on impact.
+            - do not use leading dash or bullet point characters, bullet points will be applied automatically
+            - Limit the experience_points to 3 sentences at most. That means use up to two '<<' seperation characters, then stop.
+            - Use the most relevan information provided to answer this section.
         """
+        params = {
+            'job_title': job_title,
+            'company': company,
+            'start_date': start_date,
+            'end_date': end_date,
+            'location': location,
+            'experience_points': experience_points,
+        }
+        
+        for param_name, param_value in params.items():
+            error = self._validate_string_param(param_value, param_name)
+            if error:
+                return error
+        
         points = [points.strip() for points in experience_points.split("<<")]
 
         self.work_experiences.append(
@@ -114,6 +190,11 @@ class ResumeBuilder:
             )
         )
         self._ensure_section_order(SECTION_WORK_EXPERIENCE)
+        return None
+
+    def view_current_resume_contents(self) -> str:
+        contents = self.render()
+        return contents
 
     # ------------------------------------------------------------------ #
     # Output helpers
@@ -232,6 +313,49 @@ class ResumeBuilder:
         lines.append(r"\end{cvsection}")
         lines.append("")
         return lines
+
+    def _validate_string_param(self, value: str, param_name: str) -> Optional[str]:
+        """Validate a string parameter for type and LaTeX content.
+        
+        Args:
+            value: The value to validate
+            param_name: The name of the parameter for error messages
+            
+        Returns:
+            None if valid, error message string if invalid
+        """
+        if not isinstance(value, str):
+            return f"Type error: '{param_name}' must be a string, got {type(value).__name__}"
+        if self._has_latex(value):
+            return f"Error: LaTeX syntax detected in '{param_name}'. Plain text only."
+        return None
+
+    def _has_latex(self, text: str) -> bool:
+        """Detect if there is any LaTeX present within the text.
+        
+        Returns:
+            True if LaTeX commands, environments, or math mode delimiters are found, False otherwise.
+        """
+        if not isinstance(text, str):
+            return False
+        
+        # Check for LaTeX commands (backslash followed by letters)
+        if re.search(r'\\[a-zA-Z]+\{?', text):
+            return True
+        
+        # Check for LaTeX environments (\begin{...} or \end{...})
+        if re.search(r'\\(begin|end)\{', text):
+            return True
+        
+        # Check for math mode delimiters ($, $$, \(, \), \[, \])
+        if re.search(r'\$\$?|\\[\(\)\[\]]', text):
+            return True
+        
+        # Check for LaTeX special command characters (%, &, # when preceded by backslash)
+        if re.search(r'\\[%&#]', text):
+            return True
+        
+        return False
 
     def _escape_latex_characters(self, text) -> str:
         characters_to_escape = ['$', '%']
