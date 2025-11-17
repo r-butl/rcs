@@ -180,10 +180,10 @@ class ResumeBuilder:
         points = [points.strip() for points in experience_points.split("<<")]
 
         if len(points) == 1 and points[0] == '':
-            return "Error: 'experience_points' field was left empty."
+            return "Error: 'experience_points' feild was left empty."
 
         if len(points) > 3:
-            return "Error: 'experience_points' field contains more than 3 sentences seperated by the symbol '<<'"
+            return "Error: 'experience_points' feild contains more than 3 sentences seperated by the symbol '<<'"
 
         self.work_experiences.append(
             WorkExperience(
