@@ -25,7 +25,6 @@ class Agent:
         model: str = "gpt-4o-mini",
         max_iterations: int = 20,
         api_key: Optional[str] = None,
-        log_dir: str = "logs"
     ):
         """
         Initialize the agentic loop
@@ -36,7 +35,6 @@ class Agent:
             model: OpenAI model to use
             max_iterations: Maximum number of iterations before stopping
             api_key: OpenAI API key (if None, loads from .env)
-            log_dir: Directory to save logs
         """
         if not OPENAI_AVAILABLE:
             raise ImportError("OpenAI not installed. Install with: pip install openai")
@@ -53,11 +51,7 @@ class Agent:
         self.max_iterations = max_iterations
         self.conversation_history = []
         self.iteration_count = 0
-        self.log_dir = log_dir
         self.session_log_path = None
-        
-        # Initialize session log
-        self._initialize_session_log()
         
     def _get_tool_schemas(self) -> List[Dict]:
         """Convert tools dictionary to OpenAI function calling schema"""
@@ -334,60 +328,3 @@ class Agent:
             "warning": "Max iterations reached"
         }
     
-    def _initialize_session_log(self):
-        """Initialize a new session log file"""
-        # Create log directory if it doesn't exist
-        os.makedirs(self.log_dir, exist_ok=True)
-        
-        # Generate filename with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_filename = f"agent_session_{timestamp}.json"
-        self.session_log_path = os.path.join(self.log_dir, log_filename)
-        
-        # Create initial log file
-        initial_log = {
-            "session_start": datetime.now().isoformat(),
-            "model": self.model,
-            "max_iterations": self.max_iterations,
-            "interactions": []
-        }
-        
-        try:
-            with open(self.session_log_path, 'w', encoding='utf-8') as f:
-                json.dump(initial_log, f, indent=2, ensure_ascii=False, default=str)
-        except Exception as e:
-            print(f"[ERROR] Failed to initialize session log: {e}")
-    
-    def save_log(self) -> str:
-        """
-        Append the current conversation to the session log file
-        
-        Returns:
-            Path to the log file
-        """
-        if not self.session_log_path:
-            print("[ERROR] No session log initialized")
-            return ""
-        
-        try:
-            # Read existing log
-            with open(self.session_log_path, 'r', encoding='utf-8') as f:
-                log_data = json.load(f)
-            
-            # Append current interaction
-            interaction = {
-                "timestamp": datetime.now().isoformat(),
-                "iteration_count": self.iteration_count,
-                "conversation_history": self.conversation_history
-            }
-            log_data["interactions"].append(interaction)
-            log_data["last_updated"] = datetime.now().isoformat()
-            
-            # Write back to file
-            with open(self.session_log_path, 'w', encoding='utf-8') as f:
-                json.dump(log_data, f, indent=2, ensure_ascii=False, default=str)
-            
-            return self.session_log_path
-        except Exception as e:
-            print(f"[ERROR] Failed to save log: {e}")
-            return ""

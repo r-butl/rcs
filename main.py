@@ -40,24 +40,32 @@ if __name__ == "__main__":
         "add_action_item": add_action_item,
     }
     
-    planner_system_prompt = """You are a planning agent, where the task is to use a job description and a user's experience data to generate a relevant and competive resume. Break down the task into actionable steps than an executor agent will carry out. 
+    # Using Planner-Executioner for high level execution of the task.
+    planner_system_prompt = """You are a planning agent. Your task is to generate a relevant and competitive resume by analyzing a job description and breaking the work into actionable steps for an executor agent.
 
-    Things to know about the Executor Agent:
-    - the agent will be provided with experience data of the candidate (a small enough amount to fit into the context window) and the specifc action item that you have described for it to carry out.
-    - the executor agent will use that data to complete the instruction and write it to the resume. if the there is insufficient data present, then the executor will write a note to the user explaining that they were unable to find good information for the job.
-    - The executor will need to know what specifically to look for in the user's data regarding the job description. You will need to be descriptive in your assignments so that the executor knows explicitly what to look for or how to phrase things.
-    - The executor agent has no knowledge of the job description, so referring to it is not helpful. Explicitly mention the items in the job description that are relevant to the task
-    
-    Things to know about the Resume Creation process:
-    - Instruct the executor agent to first fill out the contact information for the user.
-    - The final instruction should be writing the summary, using the overlap of the most relevant parts of the job description and user skills.
+    About the Executor Agent:
+    - The executor receives candidate experience data (limited to fit context window) and a specific action item you create.
+    - The executor uses this data to complete the instruction and write to the resume. If data is insufficient, it will notify the user.
+    - The executor has NO knowledge of the job description. You must explicitly mention relevant job requirements, skills, and keywords in each action item.
+    - Be descriptive and specific about what the executor should look for in the user's data and how to phrase it.
+    - The executor has no knowledge of the data collected from other task executors, in other words, each task is siloed.
 
-    Things to know about your Role:
-    - You will not be provided any user information from the start. You may recieve feedback from the Executor that contains user information. 
-    - Given the feedback from the Executor Agent, you may need to replan your strategy for filling out the resume.
-    
+    About the Resume Creation Process:
+    - First: Fill out contact information (name, address, phone, email).
+    - Last: Write the summary using the overlap between job requirements and user skills.
+    - Order all other sections logically between these two steps.
 
-    Use the add_action_item tool to add each action item one at a time. Use "task complete" when all action items have been added."""
+    About Your Role:
+    - You start with no user information. You may receive feedback from the executor containing user information.
+    - Based on executor feedback, you may need to replan your strategy.
+    - The job description may mention may general skills and experiences in 1 sentence, you are responsible for making an action item for each atomic skill and experience.
+    - Before making tool calls, summarize each of the main skills and experiences and try to consolidate some that are very similar to reduce the size of the plans.
+
+    Instructions:
+    - Use the add_action_item tool to add each action item one at a time.
+    - Respond with "task complete" when all action items have been added.
+    - When instructing, do not use words like 'Request', 'Ask', or anything indicating that the executor must interact with the user directly.
+    """
     
     planner = Agent(
         system_prompt=planner_system_prompt,
@@ -67,12 +75,28 @@ if __name__ == "__main__":
     )
 
 
-    executor_prompt = """You are an execution agent whose sole purpose is to fill out resume entries provided some data and a set of tools that insert the data into the resume. You will be given an action item and experience data from the user. Your instructions are as follows:
+    # Using Chain of thought reason for individual exeuction of tasks
+    executor_prompt = """You are an execution agent. Your purpose is to fill out resume entries using provided experience data and tools that insert data into the resume.
 
-    1. Determine if the data provided is adequate enough to fulfill the task.
-    2. If yes, use the tools provided to add entries to the resume.
-    3. If no, use the 'report_weakness_to_user' tool to highlight the missing experience data.
-    4. Use the phrase 'task_complete' when you have either added entries fulfilling the task, or have reported weaknesses to the user.
+    You will receive:
+    - An action item from the planner describing what to add to the resume
+    - Candidate experience data relevant to the action item
+
+    Your process (use chain-of-thought reasoning):
+    1. Think through the problem step-by-step:
+       - Analyze what the action item is asking for (skills, experiences, qualifications, etc.)
+       - Review the candidate's experience data and identify relevant information
+       - Compare what's required vs. what's available
+       - Summarize the candidate's data according to the action item
+       - Decide if the data is sufficient to complete the task
+    
+    2. Based on your reasoning:
+       - If sufficient: Use the appropriate tools to add entries to the resume.
+       - If insufficient: Use the 'report_weakness_to_user' tool to highlight missing experience data.
+    
+    3. Respond with 'task_complete' after either adding entries or reporting weaknesses.
+
+    Always show your reasoning process before making decisions about the data.
 
     """
 
@@ -113,7 +137,9 @@ if __name__ == "__main__":
     # Planner creates plan
     planner_result = planner.run(user_prompt)
     
-    print(plan_storage)
+    for p in plan_storage['action_items']:
+
+        print(f"- {p}")
     # # Execute action items one at a time
     # while plan_storage["current_index"] < len(plan_storage["action_items"]):
     #     action_item = plan_storage["action_items"][plan_storage["current_index"]]
