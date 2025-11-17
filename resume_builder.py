@@ -179,6 +179,12 @@ class ResumeBuilder:
         
         points = [points.strip() for points in experience_points.split("<<")]
 
+        if len(points) == 1 and points[0] == '':
+            return "Error: 'experience_points' field was left empty."
+
+        if len(points) > 3:
+            return "Error: 'experience_points' field contains more than 3 sentences seperated by the symbol '<<'"
+
         self.work_experiences.append(
             WorkExperience(
                 job_title=job_title.strip(),
@@ -369,13 +375,77 @@ class ResumeBuilder:
 if __name__ == "__main__":
     test = ResumeBuilder("test_document.tex")
 
-    test.add_work_experience(
+    # 1. Valid input (should not return an error)
+    print("Valid input:")
+    error = test.add_work_experience(
         job_title="Research Assistant",
         company="Elephant Listening Project, Student Research Group, CSU, Chico",
         start_date="August '24",
-        end_date="Expected Graduation December ‘25",
+        end_date="Expected Graduation December '25",
         location="Chico, CA",
-        experience_points="""Published a paper in SPIE comparing RNNs and CNNs for detecting elephants' rumbles in the infrasound sound spectrum with 95% detection accuracy using CNN.<<Led entire research project from conception to completion in 3 months, including data exploration, engineering, and training/validation/testing scripts.""",
+        experience_points="Worked with RNNs and CNNs for elephant detection<<Analyzed infrasound data<<Achieved 95% accuracy using CNNs"
     )
+    print("Error:", error)
+
+    # 2. Non-string parameter (should trigger type error)
+    print("\nNon-string parameter test (start_date as int):")
+    error = test.add_work_experience(
+        job_title="Research Assistant",
+        company="Elephant Listening Project",
+        start_date=2024,
+        end_date="Dec '25",
+        location="Chico, CA",
+        experience_points="Did research on elephant data"
+    )
+    print("Error:", error)
+
+    # 3. LaTeX detected in job_title (should trigger LaTeX error)
+    print("\nLaTeX in job_title:")
+    error = test.add_work_experience(
+        job_title="Lead \\textbf{Engineer}",
+        company="Tech Place",
+        start_date="Jan '23",
+        end_date="May '24",
+        location="Remote",
+        experience_points="Managed software projects"
+    )
+    print("Error:", error)
+
+    # 4. Empty experience_points (should trigger missing skills error)
+    print("\nEmpty experience_points:")
+    error = test.add_work_experience(
+        job_title="Developer",
+        company="Web Company",
+        start_date="Feb '22",
+        end_date="Jan '23",
+        location="USA",
+        experience_points=""
+    )
+    print("Error:", error)
+
+    # 5. More than three experience points (test only first three kept)
+    print("\nMore than three experiences (should only be 3 used):")
+    error = test.add_work_experience(
+        job_title="Analyst",
+        company="DataCorp",
+        start_date="Jul '21",
+        end_date="Jul '22",
+        location="Boston, MA",
+        experience_points="Identified trends<<Built dashboards<<Presented findings<<Extra point should be ignored"
+    )
+    print("Error:", error)
+
+    # 6. Experience point with LaTeX math (should be error)
+    print("\nLaTeX math in experience_points:")
+    error = test.add_work_experience(
+        job_title="Data Scientist",
+        company="Analytics LLC",
+        start_date="Feb '20",
+        end_date="Mar '21",
+        location="New York",
+        experience_points="Achieved $99\\%$ accuracy using models"
+    )
+    print("Error:", error)
+
 
     test.save()
