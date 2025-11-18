@@ -140,29 +140,29 @@ if __name__ == "__main__":
     for p in plan_storage['action_items']:
 
         print(f"- {p}")
-    # # Execute action items one at a time
-    # while plan_storage["current_index"] < len(plan_storage["action_items"]):
-    #     action_item = plan_storage["action_items"][plan_storage["current_index"]]
-    #     executor_prompt = f"Execute this action item:\n{action_item}\n\nExperience data:\n{experience_data}"
-    #     executor_result = executor.run(executor_prompt)
+    # Execute action items one at a time
+    while plan_storage["current_index"] < len(plan_storage["action_items"]):
+        action_item = plan_storage["action_items"][plan_storage["current_index"]]
+        executor_prompt = f"Given this exeperience data from the user:\n{experience_data}\n\nExecute this action item, following the guidelines provided:\n{action_item}\n\n"
+        executor_result = executor.run(executor_prompt)
         
-    #     # Capture executor's full context from conversation history when task is complete
-    #     executor_context = ""
-    #     if executor.conversation_history:
-    #         for msg in executor.conversation_history:
-    #             role = msg.get("role", "")
-    #             content = msg.get("content", "")
-    #             if content:
-    #                 executor_context += f"[{role}]: {content}\n"
-    #             # Include tool calls and results
-    #             if msg.get("tool_calls"):
-    #                 executor_context += f"[tool_calls]: {msg.get('tool_calls')}\n"
+        # Capture executor's full context from conversation history when task is complete
+        executor_context = ""
+        if executor.conversation_history:
+            for msg in executor.conversation_history:
+                role = msg.get("role", "")
+                content = msg.get("content", "")
+                if content:
+                    executor_context += f"[{role}]: {content}\n"
+                # Include tool calls and results
+                if msg.get("tool_calls"):
+                    executor_context += f"[tool_calls]: {msg.get('tool_calls')}\n"
         
-    #     # Feed back to planner with executor's context
-    #     if executor_context:
-    #         planner.run(f"Executor completed action {plan_storage['current_index'] + 1}:\n{executor_context}\n\nContinue with next action or replan if needed.")
+        # # Feed back to planner with executor's context
+        # if executor_context:
+        #     planner.run(f"Executor completed action {plan_storage['current_index'] + 1}:\n{executor_context}\n\nContinue with next action or replan if needed.")
         
-    #     plan_storage["current_index"] += 1
-    #     executor.conversation_history = []  # Reset executor context for next action item
+        plan_storage["current_index"] += 1
+        executor.conversation_history = []  # Reset executor context for next action item
 
-    # latex_resume.save()
+        latex_resume.save()
